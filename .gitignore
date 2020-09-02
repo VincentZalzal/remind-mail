@@ -131,3 +131,4 @@ dmypy.json
 /TestResults
 /credentials.json
 /token.pickle
+/sample/temp.py
