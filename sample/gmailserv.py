@@ -55,3 +55,16 @@ def send_message(service, message):
     """Send created message.
     """
     service.users().messages().send(userId='me', body=message).execute()
+
+    # Using drafts
+    #body = {'message': message}
+    #draft = service.users().drafts().create(userId='me', body=body).execute()
+    #body = {'id': draft['id']}
+    #service.users().drafts().send(userId='me', body=body).execute()
+
+def send_to_self(service, email, subject, message_text=''):
+    """Create message, then send to self.
+    Wraps create_message and send_message.
+    """
+    msg = create_message(sender=email, to=email, subject=subject, message_text=message_text)
+    send_message(service, msg)
