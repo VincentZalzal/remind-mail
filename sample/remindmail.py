@@ -1,11 +1,8 @@
-import gmailserv
+from mailsender import MailSender
 
 def main():
-    serv = gmailserv.get_service()
-    gmailserv.send_to_self(
-        serv,
-        "vincent.zalzal@gmail.com",
-        '[REM] Test 3')
+    with MailSender(from_email='vzalzal@vzalzal.com', host='mail.vzalzal.com') as sender:
+        sender.send('vincent.zalzal@gmail.com', '[REM] Test 4')
 
 if __name__ == '__main__':
     main()
