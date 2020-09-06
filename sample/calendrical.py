@@ -1,5 +1,7 @@
 from datetime import datetime
 
+_weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
 def get_time(config, time_str):
     safe_time_str = time_str if time_str is not None else config['default_time']
     aliases = config.get('time_aliases', {})
@@ -13,10 +15,21 @@ def get_datetime(date_str, time):
     else:
         return None
 
+def find_next_datetime_on_weekday(day_idx, rule_time, min_datetime):
+    if min_datetime.time() > rule_time:
+        next_date = min_datetime.date() + datetime.timedelta(days=1)
+    else:
+        next_date = min_datetime.date()
+    next_datetime = datetime.combine(next_date, rule_time)
+    days_to_next_weekday = (day_idx - next_datetime.weekday()) % 7
+    return next_datetime + datetime.timedelta(days=days_to_next_weekday)
+
 def find_next_datetime(when_str, rule_start_datetime, rule_time, min_datetime):
     # rule_start_datetime may be None
-    next_datetime = min_datetime # TODO implement (switch on rule type)
-    return next_datetime
+    if when_str in _weekdays:
+        return find_next_datetime_on_weekday(_weekdays.index(when_str), rule_time, min_datetime)
+    else:
+        return min_datetime # TODO implement (switch on rule type)
 
 def message_to_add(rule, start_datetime, end_datetime):
     rule_time = get_time(config, rule.get('time'))
