@@ -50,16 +50,21 @@ class RegexList:
 
 _regexes = RegexList()
 
-def find_next_datetime(min_datetime, when_str, rule_start_datetime = None): # TODO isolate parsing to test it separately, should return something...
-    '''Parse "every" string, then defer to appropriate calendrical method'''
+def parse_when(when_str):
+    '''Return tuple (func, {args})'''
     when_str_lc = when_str.lower()
     matcher = ReMatcher()
     if when_str_lc in _weekdays:
-        return next_datetime_weekly(min_datetime, _weekdays.index(when_str_lc))
+        return (next_datetime_weekly, {'day_idx': _weekdays.index(when_str_lc)})
     elif matcher.match(_regexes.yearly, when_str_lc) is not None:
-        return next_datetime_yearly(min_datetime, when_str_lc)
+        return (next_datetime_yearly, {'when_str': when_str})
     else:
-        return min_datetime # TODO implement (switch on rule type: 'day N')
+        raise Exception(f"Unable to parse '{when_str}'") # TODO implement (switch on rule type: 'day N')
+
+def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
+    '''Parse "every" string, then defer to appropriate calendrical method'''
+    func, args = parse_when(when_str)
+    return func(min_datetime, **args)
 
 def add_next_datetime(rule, start_datetime):
     rule_time = rule['_rule_time']
