@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 import re
 
-_weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
 def get_time(config, time_str):
     safe_time_str = time_str if time_str is not None else config['default_time']
     aliases = config.get('time_aliases', {})
@@ -44,19 +42,22 @@ class ReMatcher:
         self.last_match = regex.match(text)
         return self.last_match
 
+_weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
 class RegexList:
     def __init__(self):
         self.yearly = re.compile(r"\d?\d-\d?\d")
 
-regexes = RegexList()
+_regexes = RegexList()
 
 def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
     '''Parse "every" string, then defer to appropriate calendrical method'''
+    when_str_lc = when_str.lower()
     matcher = ReMatcher()
-    if when_str in _weekdays: # TODO make case-insensitive
-        return next_datetime_weekly(min_datetime, _weekdays.index(when_str))
-    elif matcher.match(regexes.yearly, when_str) is not None:
-        return next_datetime_yearly(min_datetime, when_str)
+    if when_str_lc in _weekdays:
+        return next_datetime_weekly(min_datetime, _weekdays.index(when_str_lc))
+    elif matcher.match(_regexes.yearly, when_str_lc) is not None:
+        return next_datetime_yearly(min_datetime, when_str_lc)
     else:
         return min_datetime # TODO implement (switch on rule type: 'day N')
 
