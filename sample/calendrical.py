@@ -21,11 +21,27 @@ def next_time(min_datetime, rule_time):
         date = date + timedelta(days=1)
     return datetime.combine(date, rule_time)
 
-def next_datetime_weekly(min_datetime, day_idx):
-    days_to_next_weekday = (day_idx - min_datetime.weekday()) % 7
-    return min_datetime + timedelta(days=days_to_next_weekday)
+def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
+    assert len(days) >= 1
+    assert sorted(days) == days
+    assert freq >= 1
+    
+    days_to_next_weekday = min( (day - min_datetime.weekday()) % 7 for day in days)
+    next_datetime = min_datetime + timedelta(days=days_to_next_weekday)
+    
+    if freq > 1:
+        assert len(days) == 1
+        assert start_datetime is not None
+        assert start_datetime.weekday() == days[0]
+        assert start_datetime <= min_datetime and min_datetime <= next_datetime
+        assert next_datetime.weekday() == start_datetime.weekday()
+        num_elapsed_weeks = (next_datetime - start_datetime).days // 7
+        weeks_to_add = -num_elapsed_weeks % freq
+        next_datetime = next_datetime + timedelta(days = weeks_to_add*7)
+    
+    return next_datetime
 
-def next_datetime_yearly(min_datetime, when_str):
+def next_datetime_yearly(min_datetime, when_str, start_datetime = None):
     date = datetime.strptime(when_str, '%m-%d')
     next_datetime = min_datetime.replace(month=date.month, day=date.day)
     if next_datetime < min_datetime:
@@ -55,7 +71,7 @@ def parse_when(when_str):
     when_str_lc = when_str.lower()
     matcher = ReMatcher()
     if when_str_lc in _weekdays:
-        return (next_datetime_weekly, {'day_idx': _weekdays.index(when_str_lc)})
+        return (next_datetime_weekly, {'days': [_weekdays.index(when_str_lc)]})
     elif matcher.match(_regexes.yearly, when_str_lc) is not None:
         return (next_datetime_yearly, {'when_str': when_str})
     else:
@@ -64,7 +80,7 @@ def parse_when(when_str):
 def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
     '''Parse "every" string, then defer to appropriate calendrical method'''
     func, args = parse_when(when_str)
-    return func(min_datetime, **args)
+    return func(min_datetime, start_datetime=rule_start_datetime, **args)
 
 def add_next_datetime(rule, start_datetime):
     rule_time = rule['_rule_time']

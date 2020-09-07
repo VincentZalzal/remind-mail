@@ -43,9 +43,23 @@ def test_next_time():
 
 def test_next_datetime_weekly():
     thursday = datetime(2020, 9, 17, 8, 15) # idx = 3
-    assert sample.calendrical.next_datetime_weekly(thursday, 3) == thursday
-    assert sample.calendrical.next_datetime_weekly(thursday, 4) == thursday + timedelta(days=1)
-    assert sample.calendrical.next_datetime_weekly(thursday, 2) == thursday + timedelta(days=6)
+    assert sample.calendrical.next_datetime_weekly(thursday, [3]) == thursday
+    assert sample.calendrical.next_datetime_weekly(thursday, [4]) == thursday + timedelta(days=1)
+    assert sample.calendrical.next_datetime_weekly(thursday, [2]) == thursday + timedelta(days=6)
+
+    assert sample.calendrical.next_datetime_weekly(thursday, [3, 4]) == thursday
+    assert sample.calendrical.next_datetime_weekly(thursday, [1, 3]) == thursday
+
+    assert sample.calendrical.next_datetime_weekly(thursday, [4, 5]) == thursday + timedelta(days=1)
+    assert sample.calendrical.next_datetime_weekly(thursday, [1, 4]) == thursday + timedelta(days=1)
+    assert sample.calendrical.next_datetime_weekly(thursday, [1, 2]) == thursday + timedelta(days=5)
+
+    assert sample.calendrical.next_datetime_weekly(thursday, [3], freq=3, start_datetime=thursday) == thursday
+    assert sample.calendrical.next_datetime_weekly(thursday, [3], freq=3, start_datetime=thursday - timedelta(days=3*7)) == thursday
+    assert sample.calendrical.next_datetime_weekly(thursday, [3], freq=3, start_datetime=thursday - timedelta(days=2*7)) == thursday + timedelta(days=1*7)
+    assert sample.calendrical.next_datetime_weekly(thursday, [3], freq=3, start_datetime=thursday - timedelta(days=4*7)) == thursday + timedelta(days=2*7)
+
+    assert sample.calendrical.next_datetime_weekly(thursday - timedelta(days=5), [3], freq=3, start_datetime=thursday - timedelta(days=4*7)) == thursday + timedelta(days=2*7)
 
 def test_next_datetime_yearly():
     first_datetime = datetime(2020, 9, 17, 8, 15)
