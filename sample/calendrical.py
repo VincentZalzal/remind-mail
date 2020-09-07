@@ -44,14 +44,18 @@ class ReMatcher:
         self.last_match = regex.match(text)
         return self.last_match
 
+class RegexList:
+    def __init__(self):
+        self.yearly = re.compile(r"\d?\d-\d?\d")
+
+regexes = RegexList()
+
 def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
     '''Parse "every" string, then defer to appropriate calendrical method'''
     matcher = ReMatcher()
-    regex = re.compile(r"\d?\d-\d?\d")
-
     if when_str in _weekdays: # TODO make case-insensitive
         return next_datetime_weekly(min_datetime, _weekdays.index(when_str))
-    elif matcher.match(regex, when_str) is not None:
+    elif matcher.match(regexes.yearly, when_str) is not None:
         return next_datetime_yearly(min_datetime, when_str)
     else:
         return min_datetime # TODO implement (switch on rule type: 'day N')
