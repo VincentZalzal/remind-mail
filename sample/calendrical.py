@@ -41,28 +41,28 @@ def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
     
     return next_datetime
 
-def next_datetime_yearly(min_datetime, when_str, start_datetime = None):
-    date = datetime.strptime(when_str, '%m-%d')
-    next_datetime = min_datetime.replace(month=date.month, day=date.day)
-    if next_datetime < min_datetime:
-        # Add a year safely. In theory, not needed, as strptime('%m-%d') does not allow 02-29
-        if next_datetime.month == 2 and next_datetime.day == 29:
-            next_datetime = next_datetime.replace(month=3, day=1)
-        next_datetime = next_datetime.replace(year = next_datetime.year + 1)
+def next_datetime_yearly(min_datetime, freq, start_datetime):
+    assert freq >= 1
+    assert not (start_datetime.month == 2 and start_datetime.day == 29)
+
+    # how many multiple of freq years must I add to start_datetime so that it is >= min_datetime?
+    next_datetime = start_datetime
+    while next_datetime < min_datetime:
+        next_datetime = next_datetime.replace(year=next_datetime.year + freq)
     return next_datetime
 
 class ReMatcher:
     def __init__(self):
-        self.last_match = None
-    def match(self, regex, text):
-        self.last_match = regex.match(text)
-        return self.last_match
+        self.match = None
+    def matches(self, regex, text):
+        self.match = regex.match(text)
+        return self.match is not None
 
 _weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 class RegexList:
     def __init__(self):
-        self.yearly = re.compile(r"\d?\d-\d?\d")
+        self.yearly = re.compile(r"(\d+ )?years?")
 
 _regexes = RegexList()
 
@@ -72,8 +72,9 @@ def parse_when(when_str):
     matcher = ReMatcher()
     if when_str_lc in _weekdays:
         return (next_datetime_weekly, {'days': [_weekdays.index(when_str_lc)]})
-    elif matcher.match(_regexes.yearly, when_str_lc) is not None:
-        return (next_datetime_yearly, {'when_str': when_str})
+    elif matcher.matches(_regexes.yearly, when_str_lc):
+        freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
+        return (next_datetime_yearly, {'freq': freq})
     else:
         raise Exception(f"Unable to parse '{when_str}'") # TODO implement (switch on rule type: 'day N')
 
