@@ -75,6 +75,8 @@ def test_next_datetime_yearly():
     assert sample.calendrical.next_datetime_yearly(rule_datetime.replace(year=2023), 3, rule_datetime) == rule_datetime.replace(year=2023)
 
 def test_parse_when():
+    assert sample.calendrical.parse_when('day') == (sample.calendrical.next_datetime_daily, {'freq': 1})
+    assert sample.calendrical.parse_when('12 days') == (sample.calendrical.next_datetime_daily, {'freq': 12})
     assert sample.calendrical.parse_when('tuesday') == (sample.calendrical.next_datetime_weekly, {'days': [1]})
     assert sample.calendrical.parse_when('weekday') == (sample.calendrical.next_datetime_weekly, {'days': [0,1,2,3,4]})
     assert sample.calendrical.parse_when('week on friday') == (sample.calendrical.next_datetime_weekly, {'freq': 1, 'days': [4]})

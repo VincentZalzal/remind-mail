@@ -21,6 +21,9 @@ def next_time(min_datetime, rule_time):
         date = date + timedelta(days=1)
     return datetime.combine(date, rule_time)
 
+def next_datetime_daily(min_datetime, freq = 1, start_datetime = None):
+    raise Exception('Not implemented yet') # TODO implement
+
 def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
     assert len(days) >= 1
     assert sorted(days) == days
@@ -68,6 +71,7 @@ _weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
 
 class RegexList:
     def __init__(self):
+        self.daily = re.compile(r"(\d+ )?days?")
         self.weekly = re.compile(r"(\d+ )?weeks? on ([a-z]+)")
         self.monthly_on_day = re.compile(r"(\d+ )?months? on day (-?\d+)")
         self.monthly_on_week = re.compile(r"(\d+ )?months? on ([a-z]+) (-?\d)")
@@ -79,7 +83,10 @@ def parse_when(when_str):
     '''Return tuple (func, {args})'''
     when_str_lc = when_str.lower()
     matcher = ReMatcher()
-    if when_str_lc in _weekdays:
+    if matcher.matches(_regexes.daily, when_str_lc):
+        freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
+        return (next_datetime_daily, {'freq': freq})
+    elif when_str_lc in _weekdays:
         return (next_datetime_weekly, {'days': [_weekdays.index(when_str_lc)]})
     elif when_str_lc == 'weekday':
         return (next_datetime_weekly, {'days': [0,1,2,3,4]})
