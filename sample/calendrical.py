@@ -72,6 +72,8 @@ def parse_when(when_str):
     matcher = ReMatcher()
     if when_str_lc in _weekdays:
         return (next_datetime_weekly, {'days': [_weekdays.index(when_str_lc)]})
+    elif when_str_lc == 'weekday':
+        return (next_datetime_weekly, {'days': [0,1,2,3,4]})
     elif matcher.matches(_regexes.yearly, when_str_lc):
         freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
         return (next_datetime_yearly, {'freq': freq})

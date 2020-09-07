@@ -76,11 +76,13 @@ def test_next_datetime_yearly():
 
 def test_parse_when():
     assert sample.calendrical.parse_when('tuesday') == (sample.calendrical.next_datetime_weekly, {'days': [1]})
+    assert sample.calendrical.parse_when('weekday') == (sample.calendrical.next_datetime_weekly, {'days': [0,1,2,3,4]})
     assert sample.calendrical.parse_when('year') == (sample.calendrical.next_datetime_yearly, {'freq': 1})
     assert sample.calendrical.parse_when('12 years') == (sample.calendrical.next_datetime_yearly, {'freq': 12})
 
 def test_find_next_datetime():
     thursday = datetime(2020, 9, 17, 8, 15)
     assert sample.calendrical.find_next_datetime(thursday, 'Wednesday') == thursday + timedelta(days=6)
+    assert sample.calendrical.find_next_datetime(thursday + timedelta(days=2), 'weekday') == thursday + timedelta(days=4)
     assert sample.calendrical.find_next_datetime(thursday, '3 years', datetime(2020, 8, 11, 10, 0)) == datetime(2023, 8, 11, 10, 0)
     # TODO more tests here
