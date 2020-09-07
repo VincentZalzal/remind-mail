@@ -22,12 +22,15 @@ def next_time(min_datetime, rule_time):
     return datetime.combine(date, rule_time)
 
 def next_datetime_daily(min_datetime, freq = 1, start_datetime = None):
+    assert freq >= 1
+    assert start_datetime is None or min_datetime.time() == start_datetime.time()
     raise Exception('Not implemented yet') # TODO implement
 
 def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
     assert len(days) >= 1
     assert sorted(days) == days
     assert freq >= 1
+    assert start_datetime is None or min_datetime.time() == start_datetime.time()
     
     days_to_next_weekday = min( (day - min_datetime.weekday()) % 7 for day in days)
     next_datetime = min_datetime + timedelta(days=days_to_next_weekday)
@@ -45,14 +48,19 @@ def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
     return next_datetime
 
 def next_datetime_monthly_on_day(min_datetime, day, freq = 1, start_datetime = None):
+    assert freq >= 1
+    assert start_datetime is None or min_datetime.time() == start_datetime.time()
     raise Exception('Not implemented yet') # TODO implement
 
 def next_datetime_monthly_on_week(min_datetime, weekday, weeknum, freq = 1, start_datetime = None):
+    assert freq >= 1
+    assert start_datetime is None or min_datetime.time() == start_datetime.time()
     raise Exception('Not implemented yet') # TODO implement
 
 def next_datetime_yearly(min_datetime, freq, start_datetime):
     assert freq >= 1
     assert not (start_datetime.month == 2 and start_datetime.day == 29)
+    assert min_datetime.time() == start_datetime.time()
 
     # how many multiple of freq years must I add to start_datetime so that it is >= min_datetime?
     next_datetime = start_datetime
@@ -111,6 +119,7 @@ def parse_when(when_str):
 
 def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
     '''Parse "every" string, then defer to appropriate calendrical method'''
+    assert rule_start_datetime is None or min_datetime.time() == rule_start_datetime.time()
     func, args = parse_when(when_str)
     return func(min_datetime, start_datetime=rule_start_datetime, **args)
 

@@ -95,5 +95,5 @@ def test_find_next_datetime():
     assert sample.calendrical.find_next_datetime(thursday, 'Wednesday') == thursday + timedelta(days=6)
     assert sample.calendrical.find_next_datetime(thursday + timedelta(days=2), 'weekday') == thursday + timedelta(days=4)
     assert sample.calendrical.find_next_datetime(thursday, '3 weeks on friday', datetime(2020, 9, 11, 8, 15)) == datetime(2020, 10, 2, 8, 15)
-    assert sample.calendrical.find_next_datetime(thursday, '3 years', datetime(2020, 8, 11, 10, 0)) == datetime(2023, 8, 11, 10, 0)
+    assert sample.calendrical.find_next_datetime(thursday, '3 years', datetime(2020, 8, 11, 8, 15)) == datetime(2023, 8, 11, 8, 15)
     # TODO more tests here
