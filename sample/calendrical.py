@@ -50,7 +50,7 @@ class RegexList:
 
 _regexes = RegexList()
 
-def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
+def find_next_datetime(min_datetime, when_str, rule_start_datetime = None): # TODO isolate parsing to test it separately, should return something...
     '''Parse "every" string, then defer to appropriate calendrical method'''
     when_str_lc = when_str.lower()
     matcher = ReMatcher()
@@ -61,26 +61,34 @@ def find_next_datetime(min_datetime, when_str, rule_start_datetime = None):
     else:
         return min_datetime # TODO implement (switch on rule type: 'day N')
 
-def message_to_add(rule, start_datetime, end_datetime):
-    rule_time = get_time(config, rule.get('time'))
+def add_next_datetime(rule, start_datetime):
+    rule_time = rule['_rule_time']
     rule_start_datetime = get_datetime(rule.get('start_date'), rule_time)
-    rule_end_datetime = get_datetime(rule.get('end_date'), rule_time)
     min_datetime = start_datetime if rule_start_datetime is None else max(start_datetime, rule_start_datetime)
     min_datetime = next_time(min_datetime, rule_time)
-    max_datetime = end_datetime if rule_end_datetime is None else min(end_datetime, rule_end_datetime)
+    rule['_next_datetime'] = find_next_datetime(min_datetime, rule['every'], rule_start_datetime)
 
-    next_datetime = find_next_datetime(min_datetime, rule['every'], rule_start_datetime)
-    if next_datetime <= max_datetime:
-        return {key: rule[key] for key in ['subject', 'body']}
-    else:
-        return None
-
-def messages_between(config, start_datetime, end_datetime):
-    messages = []
-
+def add_next_dates(config, start_datetime):
     for rule in config['rules']:
-        msg = message_to_add(rule, start_datetime, end_datetime)
-        if msg is not None:
-            messages.append(msg)
+        rule['_rule_time'] = get_time(config, rule.get('time'))
+        add_next_datetime(rule, start_datetime)
 
+def is_before(rule, end_datetime):
+    rule_end_datetime = get_datetime(rule.get('end_date'), rule['_rule_time'])
+    max_datetime = end_datetime if rule_end_datetime is None else min(end_datetime, rule_end_datetime)
+    next_datetime = rule['_next_datetime']
+    return next_datetime <= max_datetime
+
+def messages_before(config, end_datetime):
+    messages = []
+    for rule in config['rules']:
+        if is_before(rule, end_datetime):
+            messages.append({key: rule[key] for key in ['subject', 'body']})
+    return messages
+
+def next_dates(config):
+    messages = []
+    for rule in config['rules']:
+        messages.append({'rule': rule['subject'], 'date': rule['_next_datetime']})
+    # TODO messages sort chronologically
     return messages
