@@ -44,6 +44,9 @@ def next_datetime_weekly(min_datetime, days, freq = 1, start_datetime = None):
 def next_datetime_monthly_on_day(min_datetime, day, freq = 1, start_datetime = None):
     raise Exception('Not implemented yet') # TODO implement
 
+def next_datetime_monthly_on_week(min_datetime, weekday, weeknum, freq = 1, start_datetime = None):
+    raise Exception('Not implemented yet') # TODO implement
+
 def next_datetime_yearly(min_datetime, freq, start_datetime):
     assert freq >= 1
     assert not (start_datetime.month == 2 and start_datetime.day == 29)
@@ -67,6 +70,7 @@ class RegexList:
     def __init__(self):
         self.weekly = re.compile(r"(\d+ )?weeks? on ([a-z]+)")
         self.monthly_on_day = re.compile(r"(\d+ )?months? on day (-?\d+)")
+        self.monthly_on_week = re.compile(r"(\d+ )?months? on ([a-z]+) (-?\d)")
         self.yearly = re.compile(r"(\d+ )?years?")
 
 _regexes = RegexList()
@@ -87,6 +91,11 @@ def parse_when(when_str):
         freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
         day = int(matcher.match.group(2))
         return (next_datetime_monthly_on_day, {'freq': freq, 'day': day})
+    elif matcher.matches(_regexes.monthly_on_week, when_str_lc):
+        freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
+        weekday = _weekdays.index(matcher.match.group(2))
+        weeknum = int(matcher.match.group(3))
+        return (next_datetime_monthly_on_week, {'freq': freq, 'weekday': weekday, 'weeknum': weeknum})
     elif matcher.matches(_regexes.yearly, when_str_lc):
         freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
         return (next_datetime_yearly, {'freq': freq})

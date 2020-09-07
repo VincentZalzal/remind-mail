@@ -82,6 +82,9 @@ def test_parse_when():
     assert sample.calendrical.parse_when('month on day 3') == (sample.calendrical.next_datetime_monthly_on_day, {'freq': 1, 'day': 3})
     assert sample.calendrical.parse_when('2 months on day 13') == (sample.calendrical.next_datetime_monthly_on_day, {'freq': 2, 'day': 13})
     assert sample.calendrical.parse_when('3 months on day -1') == (sample.calendrical.next_datetime_monthly_on_day, {'freq': 3, 'day': -1})
+    assert sample.calendrical.parse_when('month on friday 1') == (sample.calendrical.next_datetime_monthly_on_week, {'freq': 1, 'weeknum': 1, 'weekday': 4})
+    assert sample.calendrical.parse_when('2 months on tuesday 2') == (sample.calendrical.next_datetime_monthly_on_week, {'freq': 2, 'weeknum': 2, 'weekday': 1})
+    assert sample.calendrical.parse_when('3 months on monday -1') == (sample.calendrical.next_datetime_monthly_on_week, {'freq': 3, 'weeknum': -1, 'weekday': 0})
     assert sample.calendrical.parse_when('year') == (sample.calendrical.next_datetime_yearly, {'freq': 1})
     assert sample.calendrical.parse_when('12 years') == (sample.calendrical.next_datetime_yearly, {'freq': 12})
 
