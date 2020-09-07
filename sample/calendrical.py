@@ -62,6 +62,7 @@ _weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
 
 class RegexList:
     def __init__(self):
+        self.weekly = re.compile(r"(\d+ )?weeks? on ([a-z]+)")
         self.yearly = re.compile(r"(\d+ )?years?")
 
 _regexes = RegexList()
@@ -74,6 +75,10 @@ def parse_when(when_str):
         return (next_datetime_weekly, {'days': [_weekdays.index(when_str_lc)]})
     elif when_str_lc == 'weekday':
         return (next_datetime_weekly, {'days': [0,1,2,3,4]})
+    elif matcher.matches(_regexes.weekly, when_str_lc):
+        freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
+        day = _weekdays.index(matcher.match.group(2))
+        return (next_datetime_weekly, {'freq': freq, 'days': [day]})
     elif matcher.matches(_regexes.yearly, when_str_lc):
         freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
         return (next_datetime_yearly, {'freq': freq})

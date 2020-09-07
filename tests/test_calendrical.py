@@ -64,19 +64,21 @@ def test_next_datetime_weekly():
 def test_next_datetime_yearly():
     rule_datetime = datetime(2020, 9, 17, 8, 15)
     assert sample.calendrical.next_datetime_yearly(rule_datetime, 1, rule_datetime) == rule_datetime
-    assert sample.calendrical.next_datetime_yearly(datetime(2020, 6, 20), 1, rule_datetime) == rule_datetime
-    assert sample.calendrical.next_datetime_yearly(datetime(2021, 6, 20), 1, rule_datetime) == rule_datetime.replace(year=2021)
-    assert sample.calendrical.next_datetime_yearly(datetime(2021, 10, 5), 1, rule_datetime) == rule_datetime.replace(year=2022)
+    assert sample.calendrical.next_datetime_yearly(datetime(2020, 6, 20, 8, 15), 1, rule_datetime) == rule_datetime
+    assert sample.calendrical.next_datetime_yearly(datetime(2021, 6, 20, 8, 15), 1, rule_datetime) == rule_datetime.replace(year=2021)
+    assert sample.calendrical.next_datetime_yearly(datetime(2021, 10, 5, 8, 15), 1, rule_datetime) == rule_datetime.replace(year=2022)
 
     assert sample.calendrical.next_datetime_yearly(rule_datetime, 3, rule_datetime) == rule_datetime
-    assert sample.calendrical.next_datetime_yearly(datetime(2020, 6, 20), 3, rule_datetime) == rule_datetime
-    assert sample.calendrical.next_datetime_yearly(datetime(2021, 6, 20), 3, rule_datetime) == rule_datetime.replace(year=2023)
-    assert sample.calendrical.next_datetime_yearly(datetime(2021, 10, 5), 3, rule_datetime) == rule_datetime.replace(year=2023)
+    assert sample.calendrical.next_datetime_yearly(datetime(2020, 6, 20, 8, 15), 3, rule_datetime) == rule_datetime
+    assert sample.calendrical.next_datetime_yearly(datetime(2021, 6, 20, 8, 15), 3, rule_datetime) == rule_datetime.replace(year=2023)
+    assert sample.calendrical.next_datetime_yearly(datetime(2021, 10, 5, 8, 15), 3, rule_datetime) == rule_datetime.replace(year=2023)
     assert sample.calendrical.next_datetime_yearly(rule_datetime.replace(year=2023), 3, rule_datetime) == rule_datetime.replace(year=2023)
 
 def test_parse_when():
     assert sample.calendrical.parse_when('tuesday') == (sample.calendrical.next_datetime_weekly, {'days': [1]})
     assert sample.calendrical.parse_when('weekday') == (sample.calendrical.next_datetime_weekly, {'days': [0,1,2,3,4]})
+    assert sample.calendrical.parse_when('week on friday') == (sample.calendrical.next_datetime_weekly, {'freq': 1, 'days': [4]})
+    assert sample.calendrical.parse_when('3 weeks on friday') == (sample.calendrical.next_datetime_weekly, {'freq': 3, 'days': [4]})
     assert sample.calendrical.parse_when('year') == (sample.calendrical.next_datetime_yearly, {'freq': 1})
     assert sample.calendrical.parse_when('12 years') == (sample.calendrical.next_datetime_yearly, {'freq': 12})
 
@@ -84,5 +86,6 @@ def test_find_next_datetime():
     thursday = datetime(2020, 9, 17, 8, 15)
     assert sample.calendrical.find_next_datetime(thursday, 'Wednesday') == thursday + timedelta(days=6)
     assert sample.calendrical.find_next_datetime(thursday + timedelta(days=2), 'weekday') == thursday + timedelta(days=4)
+    assert sample.calendrical.find_next_datetime(thursday, '3 weeks on friday', datetime(2020, 9, 11, 8, 15)) == datetime(2020, 10, 2, 8, 15)
     assert sample.calendrical.find_next_datetime(thursday, '3 years', datetime(2020, 8, 11, 10, 0)) == datetime(2023, 8, 11, 10, 0)
     # TODO more tests here
