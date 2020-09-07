@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import re
 
 _weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -21,17 +22,29 @@ def find_first_datetime(rule_time, min_datetime):
         first_date = first_date + timedelta(days=1)
     return datetime.combine(first_date, rule_time)
 
-def find_next_datetime_on_weekday(day_idx, first_datetime):
+def find_next_datetime_weekly(day_idx, first_datetime):
     days_to_next_weekday = (day_idx - first_datetime.weekday()) % 7
     return first_datetime + timedelta(days=days_to_next_weekday)
+
+def find_next_datetime_yearly(when_str, first_datetime):
+    date = datetime.strptime(when_str, '%m-%d')
+    next_datetime = first_datetime.replace(month=date.month, day=date.day)
+    if next_datetime < first_datetime:
+        # Add a year safely. In theory, not needed, as strptime('%m-%d') does not allow 02-29
+        if next_datetime.month == 2 and next_datetime.day == 29:
+            next_datetime = next_datetime.replace(month=3, day=1)
+        next_datetime = next_datetime.replace(year = next_datetime.year + 1)
+    return next_datetime
 
 def find_next_datetime(when_str, rule_start_datetime, rule_time, min_datetime):
     # rule_start_datetime may be None
     first_datetime = find_first_datetime(rule_time, min_datetime)
     if when_str in _weekdays:
-        return find_next_datetime_on_weekday(_weekdays.index(when_str), first_datetime)
+        return find_next_datetime_weekly(_weekdays.index(when_str), first_datetime)
+    elif re.match(r"\d?\d-\d?\d", when_str) is not None:
+        return find_next_datetime_yearly(when_str, first_datetime)
     else:
-        return min_datetime # TODO implement (switch on rule type)
+        return min_datetime # TODO implement (switch on rule type: 'day N')
 
 def message_to_add(rule, start_datetime, end_datetime):
     rule_time = get_time(config, rule.get('time'))
