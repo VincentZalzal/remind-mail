@@ -2,6 +2,45 @@ from .context import sample
 import sample.calendrical
 from datetime import datetime, date, time, timedelta
 
+def test_days_in_month():
+    assert sample.calendrical.days_in_month(date(2020,2,15)) == 29
+    assert sample.calendrical.days_in_month(date(2019,2,1)) == 28
+
+def test_replace_signed_day():
+    assert sample.calendrical.replace_signed_day(date(2020,2,15), 3) == date(2020,2,3)
+    assert sample.calendrical.replace_signed_day(date(2020,2,15), -1) == date(2020,2,29)
+
+def test_month_number():
+    def back_and_forth(the_date):
+        return sample.calendrical.from_month_number(sample.calendrical.to_month_number(the_date), the_date.day)
+
+    assert back_and_forth(date(2020,9,9)) == date(2020,9,9)
+    assert back_and_forth(date(2021,1,2)) == date(2021,1,2)
+    assert back_and_forth(date(2022,12,3)) == date(2022,12,3)
+
+def test_add_months():
+    assert sample.calendrical.add_months(date(2020,9,9), 1) == date(2020,10,9)
+    assert sample.calendrical.add_months(date(2020,9,9), 0) == date(2020,9,9)
+    assert sample.calendrical.add_months(date(2020,9,9), -1) == date(2020,8,9)
+    assert sample.calendrical.add_months(date(2020,12,9), 1) == date(2021,1,9)
+    assert sample.calendrical.add_months(date(2020,1,9), -1) == date(2019,12,9)
+    assert sample.calendrical.add_months(date(2020,12,9), 24) == date(2022,12,9)
+    assert sample.calendrical.add_months(date(2020,1,9), -37) == date(2016,12,9)
+
+def test_diff_months():
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2020,6,9)) == 3
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2020,9,9)) == 0
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2020,9,6)) == 0
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2020,9,12)) == 0
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2020,11,9)) == -2
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2019,12,9)) == 9
+    assert sample.calendrical.diff_months(date(2020,9,9), date(2021,1,9)) == -4
+
+def test_first_of_next_month():
+    assert sample.calendrical.first_of_next_month(date(2020,2,15)) == date(2020,3,1)
+    assert sample.calendrical.first_of_next_month(date(2020,2,1)) == date(2020,3,1)
+    assert sample.calendrical.first_of_next_month(date(2020,12,1)) == date(2021,1,1)
+
 def test_get_time():
     config = {
         'time_aliases': {
@@ -54,6 +93,28 @@ def test_next_date_weekly():
     assert sample.calendrical.next_date_weekly(thursday, [3], freq=3, start_date=thursday - timedelta(days=4*7)) == thursday + timedelta(days=2*7)
 
     assert sample.calendrical.next_date_weekly(thursday - timedelta(days=5), [3], freq=3, start_date=thursday - timedelta(days=4*7)) == thursday + timedelta(days=2*7)
+
+def test_next_date_monthly_on_day():
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 17) == date(2020, 9, 17)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 20) == date(2020, 9, 20)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17),  5) == date(2020, 10, 5)
+
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), -14) == date(2020, 9, 17)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), -1) == date(2020, 9, 30)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), -27) == date(2020, 10, 5)
+
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 12, 17), 5) == date(2021, 1, 5)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 12, 17), -27) == date(2021, 1, 5)
+
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 20, freq=3, start_date=date(2020, 9, 17)) == date(2020, 9, 20)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 10, freq=3, start_date=date(2020, 9, 17)) == date(2020, 12, 10)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 20, freq=3, start_date=date(2020, 8, 20)) == date(2020, 11, 20)
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), 20, freq=3, start_date=date(2020, 7, 20)) == date(2020, 10, 20)
+
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 17), -1, freq=3, start_date=date(2020, 8, 31)) == date(2020, 11, 30)
+
+    assert sample.calendrical.next_date_monthly_on_day(date(2020, 9, 30), -3, freq=17, start_date=date(2020, 9, 28)) == date(2022, 2, 26)
+
 
 def test_next_date_yearly():
     rule_date = date(2020, 9, 17)

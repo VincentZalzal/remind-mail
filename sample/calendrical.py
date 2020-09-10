@@ -1,5 +1,33 @@
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
+from calendar import monthrange
 import re
+
+def days_in_month(the_date):
+    return monthrange(the_date.year, the_date.month)[1]
+
+def replace_signed_day(the_date, day):
+    assert -28 <= day <= 28 and day != 0
+    if day < 0:
+        pos_day = days_in_month(the_date) + 1 + day
+        return the_date.replace(day=pos_day)
+    else:
+        return the_date.replace(day=day)
+
+def to_month_number(the_date):
+    return the_date.year * 12 + the_date.month - 1
+
+def from_month_number(month_number, day = 1):
+    return date(month_number//12, month_number%12 + 1, day)
+
+def add_months(the_date, months):
+    return from_month_number(to_month_number(the_date) + months, the_date.day)
+
+def diff_months(date1, date2):
+    '''Returns date1 - date2 in months, ignoring the days of the dates'''
+    return to_month_number(date1) - to_month_number(date2)
+
+def first_of_next_month(the_date):
+    return add_months(the_date.replace(day=1), 1)
 
 def get_time(config, time_str):
     safe_time_str = time_str if time_str is not None else config['default_time']
@@ -40,6 +68,24 @@ def next_date_weekly(min_date, days, freq = 1, start_date = None):
 def next_date_monthly_on_day(min_date, day, freq = 1, start_date = None):
     assert freq >= 1
     assert start_date is None or start_date <= min_date
+    assert -28 <= day <= 28 and day != 0
+
+    # Assume freq == 1 for now; will it happen this month, or next month?
+    next_date = replace_signed_day(min_date, day)
+    if next_date < min_date:
+        # must call replace_signed_day again, because negative day depends on number of days on the month
+        next_date = replace_signed_day(first_of_next_month(min_date), day)
+    
+    if freq > 1:
+        assert start_date is not None
+        num_elapsed_months = diff_months(next_date, start_date)
+        months_to_add = -num_elapsed_months % freq
+        # must call replace_signed_day again, because negative day depends on number of days on the month
+        next_date = replace_signed_day(add_months(next_date.replace(day=1), months_to_add), day)
+
+    assert next_date >= min_date
+    return next_date
+
     raise Exception('Not implemented yet') # TODO implement
 
 def next_date_monthly_on_week(min_date, weekday, weeknum, freq = 1, start_date = None):
@@ -104,7 +150,7 @@ def parse_when(when_str):
         freq = int(matcher.match.group(1)) if matcher.match.group(1) is not None else 1
         return (next_date_yearly, {'freq': freq})
     else:
-        raise Exception(f"Unable to parse '{when_str}'") # TODO implement (switch on rule type: 'day N')
+        raise Exception(f"Unable to parse '{when_str}'") # TODO parse 'every monday, wednesday' (list of days)
 
 def find_next_date(min_date, when_str, rule_start_date = None):
     '''Parse "every" string, then defer to appropriate calendrical method'''
