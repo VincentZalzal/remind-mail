@@ -151,4 +151,41 @@ def test_find_next_date():
     assert sample.calendrical.find_next_date(thursday + timedelta(days=2), 'weekday') == thursday + timedelta(days=4)
     assert sample.calendrical.find_next_date(thursday, '3 weeks on friday', date(2020, 9, 11)) == date(2020, 10, 2)
     assert sample.calendrical.find_next_date(thursday, '3 years', date(2020, 8, 11)) == date(2023, 8, 11)
-    # TODO more tests here
+    assert sample.calendrical.find_next_date(thursday, '3 months on day -1', date(2020, 8, 31)) == date(2020, 11, 30)
+
+def test_add_next_date():
+    rule = {
+        '_rule_time': time(11,23),
+        'start_date': '2020-09-10',
+        'end_date': '2020-11-10',
+        'every': 'month on day 10',
+        }
+    sample.calendrical.add_next_date(rule, datetime(2020,9,13,8,25))
+    assert rule['_next_date'] == date(2020,10,10)
+    sample.calendrical.add_next_date(rule, datetime(2020,11,13,8,25))
+    assert rule['_next_date'] == None
+
+    rule = {
+        '_rule_time': time(11,23),
+        'start_date': '2020-09-10',
+        'every': '2 weeks on thursday',
+        }
+    sample.calendrical.add_next_date(rule, datetime(2020,9,10,8,25))
+    assert rule['_next_date'] == date(2020,9,10)
+    sample.calendrical.add_next_date(rule, datetime(2020,9,10,12,0))
+    assert rule['_next_date'] == date(2020,9,24)
+
+    rule = {
+        '_rule_time': time(11,23),
+        'every': 'monday',
+        }
+    sample.calendrical.add_next_date(rule, datetime(2020,9,10,8,25))
+    assert rule['_next_date'] == date(2020,9,14)
+
+    rule = {
+        '_rule_time': time(11,23),
+        'start_date': '2020-09-10',
+        'every': 'year',
+        }
+    sample.calendrical.add_next_date(rule, datetime(2020,9,10,13,0))
+    assert rule['_next_date'] == date(2021,9,10)
