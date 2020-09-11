@@ -214,6 +214,7 @@ def test_config():
             },
             {
             'subject': 'Rule 2',
+            'body': 'Body 2',
             'every': 'year',
             'start_date': '2020-09-10',
             },
@@ -225,9 +226,38 @@ def test_add_next_dates_and_times():
     sample.calendrical.add_next_dates_and_times(config, datetime(2020,9,10,13,0))
     
     assert config['rules'][0]['_rule_time'] == time(21,34)
-    assert config['rules'][1]['_rule_time'] == time(9,15)
+    assert config['rules'][1]['_rule_time'] == time( 9,15)
     assert config['rules'][2]['_rule_time'] == time(10,12)
 
     assert config['rules'][0]['_next_date'] == None
     assert config['rules'][1]['_next_date'] == date(2020,9,24)
     assert config['rules'][2]['_next_date'] == date(2021,9,10)
+
+def test_is_before():
+    def make_rule(date, time):
+        return {'_next_date': date, '_rule_time': time}
+    end_datetime = datetime(2020,9,24,9,15)
+    assert not sample.calendrical.is_before(make_rule(None           , time(21,34)), end_datetime)
+    assert     sample.calendrical.is_before(make_rule(date(2020,9,24), time( 9,15)), end_datetime)
+    assert not sample.calendrical.is_before(make_rule(date(2021,9,10), time(10,12)), end_datetime)
+
+def test_messages_before():
+    config = test_config()
+    start_datetime = datetime(2020,9,10,13,0)
+    end_datetime   = datetime(2022,1,1)
+    sample.calendrical.add_next_dates_and_times(config, start_datetime)
+    messages = sample.calendrical.messages_before(config, end_datetime)
+    assert messages == [
+        {'subject': 'Rule 1', 'body': ''},
+        {'subject': 'Rule 2', 'body': 'Body 2'},
+    ]
+
+def test_next_dates():
+    config = test_config()
+    start_datetime = datetime(2020,9,10,13,0)
+    sample.calendrical.add_next_dates_and_times(config, start_datetime)
+    dates = sample.calendrical.next_dates(config)
+    assert dates == [
+        {'rule': 'Rule 1', 'date': date(2020,9,24), 'time': time( 9,15)},
+        {'rule': 'Rule 2', 'date': date(2021,9,10), 'time': time(10,12)},
+    ]

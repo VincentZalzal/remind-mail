@@ -190,12 +190,12 @@ def messages_before(config, end_datetime):
     messages = []
     for rule in config['rules']:
         if is_before(rule, end_datetime):
-            messages.append({key: rule[key] for key in ['subject', 'body']})
+            messages.append({key: rule.get(key, '') for key in ['subject', 'body']})
     return messages
 
 def next_dates(config):
     messages = []
     for rule in config['rules']:
-        messages.append({'rule': rule['subject'], 'date': rule['_next_datetime']})
-    # TODO messages sort chronologically
+        if rule['_next_date'] is not None:
+            messages.append({'rule': rule['subject'], 'date': rule['_next_date'], 'time': rule['_rule_time']})
     return messages
