@@ -46,8 +46,8 @@ def test_get_time():
         'time_aliases': {
             'morning': '8:12',
             'evening': '21:34',
-            },
-        }
+        },
+    }
 
     assert sample.calendrical.get_time({}, '9:31') == time(9, 31)
     assert sample.calendrical.get_time(config, '9:31') == time(9, 31)
@@ -60,8 +60,8 @@ def test_get_time_default():
         'time_aliases': {
             'morning': '8:12',
             'evening': '21:34',
-            },
-        }
+        },
+    }
     
     assert sample.calendrical.get_time(config, '9:31') == time(9, 31)
     assert sample.calendrical.get_time(config, None) == time(10, 12)
@@ -159,7 +159,7 @@ def test_add_next_date():
         'start_date': '2020-09-10',
         'end_date': '2020-11-10',
         'every': 'month on day 10',
-        }
+    }
     sample.calendrical.add_next_date(rule, datetime(2020,9,13,8,25))
     assert rule['_next_date'] == date(2020,10,10)
     sample.calendrical.add_next_date(rule, datetime(2020,11,13,8,25))
@@ -169,7 +169,7 @@ def test_add_next_date():
         '_rule_time': time(11,23),
         'start_date': '2020-09-10',
         'every': '2 weeks on thursday',
-        }
+    }
     sample.calendrical.add_next_date(rule, datetime(2020,9,10,8,25))
     assert rule['_next_date'] == date(2020,9,10)
     sample.calendrical.add_next_date(rule, datetime(2020,9,10,12,0))
@@ -178,7 +178,7 @@ def test_add_next_date():
     rule = {
         '_rule_time': time(11,23),
         'every': 'monday',
-        }
+    }
     sample.calendrical.add_next_date(rule, datetime(2020,9,10,8,25))
     assert rule['_next_date'] == date(2020,9,14)
 
@@ -186,6 +186,48 @@ def test_add_next_date():
         '_rule_time': time(11,23),
         'start_date': '2020-09-10',
         'every': 'year',
-        }
+    }
     sample.calendrical.add_next_date(rule, datetime(2020,9,10,13,0))
     assert rule['_next_date'] == date(2021,9,10)
+
+def test_config():
+    return {
+        'default_time': '10:12',
+        'time_aliases': {
+            'morning': '8:12',
+            'evening': '21:34',
+        },
+        'rules': [
+            {
+            'subject': 'Rule 0',
+            'body': 'Body 0',
+            'every': 'month on day 10',
+            'time': 'evening',
+            'start_date': '2020-06-10',
+            'end_date': '2020-08-10',
+            },
+            {
+            'subject': 'Rule 1',
+            'every': '2 weeks on thursday',
+            'time': '9:15',
+            'start_date': '2020-09-10',
+            },
+            {
+            'subject': 'Rule 2',
+            'every': 'year',
+            'start_date': '2020-09-10',
+            },
+        ],
+    }
+
+def test_add_next_dates_and_times():
+    config = test_config()
+    sample.calendrical.add_next_dates_and_times(config, datetime(2020,9,10,13,0))
+    
+    assert config['rules'][0]['_rule_time'] == time(21,34)
+    assert config['rules'][1]['_rule_time'] == time(9,15)
+    assert config['rules'][2]['_rule_time'] == time(10,12)
+
+    assert config['rules'][0]['_next_date'] == None
+    assert config['rules'][1]['_next_date'] == date(2020,9,24)
+    assert config['rules'][2]['_next_date'] == date(2021,9,10)
