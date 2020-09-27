@@ -258,6 +258,6 @@ def test_next_dates():
     sample.calendrical.add_next_dates_and_times(config, start_datetime)
     dates = sample.calendrical.next_dates(config)
     assert dates == [
-        {'rule': 'Rule 1', 'date': date(2020,9,24), 'time': time( 9,15)},
-        {'rule': 'Rule 2', 'date': date(2021,9,10), 'time': time(10,12)},
+        {'rule': 'Rule 1', 'when': datetime(2020,9,24, 9,15)},
+        {'rule': 'Rule 2', 'when': datetime(2021,9,10,10,12)},
     ]

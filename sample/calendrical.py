@@ -197,5 +197,5 @@ def next_dates(config):
     messages = []
     for rule in config['rules']:
         if rule['_next_date'] is not None:
-            messages.append({'rule': rule['subject'], 'date': rule['_next_date'], 'time': rule['_rule_time']})
+            messages.append({'rule': rule['subject'], 'when': datetime.combine(rule['_next_date'], rule['_rule_time'])})
     return messages
