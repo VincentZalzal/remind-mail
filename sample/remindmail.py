@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import calendrical
 import re
 import argparse
-import json
+import yaml
 import os.path
 
 _datetime_format = '%Y-%m-%d %H:%M'
@@ -38,14 +38,14 @@ def log(logfile, string, verbose=True):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', choices=['generate', 'check', 'send'], help='action to perform')
-    parser.add_argument('config_filename', help='name of the JSON configuration file')
+    parser.add_argument('config_filename', help='name of the YAML configuration file')
     args = parser.parse_args()
     
     if args.action == 'generate':
-        pass #TODO handle generate option to create barebone json file
+        pass #TODO handle generate option to create barebone YAML file
 
     with open(args.config_filename) as f:
-        config = json.load(f)
+        config = yaml.safe_load(f)
 
     log_filename = os.path.splitext(args.config_filename)[0] + '.log'
 
@@ -62,7 +62,7 @@ def main():
 
         if args.action == 'check':
             messages = calendrical.next_dates(config)
-            print(f'JSON is valid.')
+            print(f'YAML is valid.')
             if messages:
                 print('\nNext messages:')
                 for message in messages:
