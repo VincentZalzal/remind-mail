@@ -132,3 +132,5 @@ dmypy.json
 /credentials.json
 /token.pickle
 /sample/temp.py
+/vzalzal.log
+/vzalzal.yml
